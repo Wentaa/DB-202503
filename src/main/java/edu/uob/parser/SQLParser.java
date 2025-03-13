@@ -22,11 +22,24 @@ public class SQLParser {
             "UPDATE", "SET", "DELETE", "JOIN", "AND", "ON", "OR", "LIKE",
             "TRUE", "FALSE", "NULL"
     ));
-
+    /**
+     * Initializes the parser with a given input SQL query.
+     * Tokenizes the input string and sets the initial parsing position.
+     *
+     * @param input The SQL-like query to be parsed.
+     */
     public SQLParser(String input) {
         this.tokens = tokenize(input);
         this.position = 0;
     }
+
+    /**
+     * Tokenizes the input SQL-like string into a list of tokens.
+     * Recognizes keywords, identifiers, numbers, string literals, and operators.
+     *
+     * @param input The query string to tokenize.
+     * @return A list of tokens representing the parsed query.
+     */
 
     private List<Token> tokenize(String input) {
         List<Token> tokens = new ArrayList<>();

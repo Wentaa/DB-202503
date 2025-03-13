@@ -1,4 +1,3 @@
-// TokenType.java
 package edu.uob.parser;
 
 public enum TokenType {

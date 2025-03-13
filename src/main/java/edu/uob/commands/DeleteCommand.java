@@ -1,4 +1,3 @@
-// DeleteCommand.java
 package edu.uob.commands;
 
 import edu.uob.conditions.Condition;
@@ -11,15 +10,33 @@ import edu.uob.storage.DBManager;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles the SQL `DELETE` command for removing rows from a table
+ * based on a specified condition.
+ */
 public class DeleteCommand extends Command {
-    private String tableName;
-    private Condition condition;
+    private String tableName;  // Name of the table from which rows will be deleted
+    private Condition condition;  // Condition to determine which rows should be deleted
 
+    /**
+     * Constructs a `DELETE` command.
+     *
+     * @param tableName The name of the table from which rows should be deleted.
+     * @param condition The condition that determines which rows to delete.
+     */
     public DeleteCommand(String tableName, Condition condition) {
         this.tableName = tableName;
         this.condition = condition;
     }
 
+    /**
+     * Executes the `DELETE` command.
+     * It evaluates each row against the condition and removes matching rows.
+     *
+     * @param dbManager The database manager that provides access to the current database.
+     * @return A `QueryResult` indicating the success of the operation.
+     * @throws RuntimeException if no database is selected or if the table does not exist.
+     */
     @Override
     public QueryResult execute(DBManager dbManager) {
         try {
@@ -33,7 +50,7 @@ public class DeleteCommand extends Command {
                 throw new RuntimeException("Table does not exist: " + tableName);
             }
 
-            // Find rows to delete
+            // Identify rows that match the condition
             List<Integer> rowIdsToDelete = new ArrayList<>();
             for (Row row : table.getRows()) {
                 if (condition.evaluate(table, row)) {
@@ -41,11 +58,10 @@ public class DeleteCommand extends Command {
                 }
             }
 
-            // Delete rows
+            // Delete the matching rows from the table
             dbManager.deleteRows(table, rowIdsToDelete);
 
-            QueryResult result = new QueryResult();
-            return result;
+            return new QueryResult(); // Return an empty QueryResult to indicate success
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
