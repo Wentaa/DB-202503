@@ -8,40 +8,25 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 public class DBClient {
+
     private static final char END_OF_TRANSMISSION = 4;
 
     public static void main(String[] args) throws IOException {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-
-        // Connect to the server
         Socket socket = new Socket("localhost", 8888);
         System.out.println("Connected to database server");
 
-        // Set up I/O
-        BufferedReader socketReader = new BufferedReader(
-                new InputStreamReader(socket.getInputStream()));
-        BufferedWriter socketWriter = new BufferedWriter(
-                new OutputStreamWriter(socket.getOutputStream()));
+        BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedWriter socketWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-        // Keep accepting commands until user exits or we're interrupted
         while (!Thread.interrupted()) {
-            try {
-                processNextCommand(input, socketReader, socketWriter);
-            } catch (IOException e) {
-                System.err.println("Error: " + e.getMessage());
-                // Try to continue anyway
-            }
+            handleNextCommand(input, socketReader, socketWriter);
         }
     }
 
-    private static void processNextCommand(BufferedReader inputReader,
-                                           BufferedReader serverResponseReader,
-                                           BufferedWriter serverWriter) throws IOException {
-        // Prompt user
+    private static void handleNextCommand(BufferedReader commandLine, BufferedReader socketReader, BufferedWriter socketWriter) throws IOException {
         System.out.print("SQL:> ");
-
-        // Get command from user
-        String command = inputReader.readLine();
+        String command = commandLine.readLine();
 
         // Skip empty commands
         if (command == null || command.trim().isEmpty()) {
@@ -55,18 +40,17 @@ public class DBClient {
             return;
         }
 
-        // Send to server
-        serverWriter.write(command + "\n");
-        serverWriter.flush();
+        socketWriter.write(command + "\n");
+        socketWriter.flush();
 
-        // Read and display response from server
-        String responseLine;
-        while ((responseLine = serverResponseReader.readLine()) != null) {
-            // Stop at end-of-transmission marker
-            if (responseLine.contains("" + END_OF_TRANSMISSION)) {
-                break;
-            }
-            System.out.println(responseLine);
+        String incomingMessage = socketReader.readLine();
+        if (incomingMessage == null) {
+            throw new IOException("Server disconnected (end-of-stream)");
+        }
+
+        while (incomingMessage != null && !incomingMessage.contains("" + END_OF_TRANSMISSION + "")) {
+            System.out.println(incomingMessage);
+            incomingMessage = socketReader.readLine();
         }
     }
 }
